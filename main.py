@@ -262,6 +262,9 @@ def procesar_opcion(opcion, usuario_actual):
         vender_producto(usuario_actual)
 
     elif opcion == "4":
+        agregar_stock_interactivo()
+
+    elif opcion == "5":
         print("Saliendo del sistema...")
         return False
 
@@ -279,7 +282,9 @@ def mostrar_menu(rol):
     if rol == "vendedor":    
         print("3. Vender producto")
 
-    print("4. Salir")
+    print("4. Agregar Stock")
+
+    print("5. Salir")
 
 
 def borrar_usuario():
@@ -377,9 +382,9 @@ def main():
             break
 
 if __name__ == "__main__":
-    #main()
+    main()
     #agregar_stock_interactivo()
-    ver_tabla("ventas")
+    #ver_tabla("ventas")
     #ver_tabla("usuarios")
     #crear_usuario("stewart", "123", "vendedor)
 
