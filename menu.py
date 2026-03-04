@@ -15,11 +15,14 @@ def mostrar_menu(rol):
 
 def vender_producto_interactivo(usuario_actual):
     codigo = input("Ingresa el código del producto a vender: ")
-    resultado = vender_producto_por_codigo_bd(
-        codigo,
-        usuario_actual["usuario"]
-    )
-    print(resultado["mensaje"])
+    try:
+        resultado = vender_producto_por_codigo_bd(
+            codigo,
+            usuario_actual["usuario"]
+        )
+        print(resultado["mensaje"])
+    except Exception:
+        print("❌ Ocurrió un error inesperado")
 
 
 def procesar_opcion(opcion, usuario_actual):

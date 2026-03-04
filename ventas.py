@@ -1,5 +1,7 @@
+import sqlite3
 from db import obtener_conexion
 from datetime import datetime
+from logger import log_error, log_event
 
 
 def crear_tabla_ventas():
@@ -22,9 +24,12 @@ def crear_tabla_ventas():
 
 def vender_producto_por_codigo_bd(codigo, usuario):
     conn = obtener_conexion()
-    cursor = conn.cursor()
+    if conn is None:
+        return {"ok": False, "mensaje":"Error de conexión"}
+    
 
     try:
+        cursor = conn.cursor()
         cursor.execute(
             "SELECT stock FROM productos WHERE codigo = ?",
             (codigo,)
@@ -42,6 +47,7 @@ def vender_producto_por_codigo_bd(codigo, usuario):
             "UPDATE productos SET stock = stock - 1 WHERE codigo = ?",
             (codigo,)
         )
+        log_event(f"Venta realizada por {usuario} - Código: {codigo}")
 
         # Registrar venta
         fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -55,10 +61,14 @@ def vender_producto_por_codigo_bd(codigo, usuario):
 
         conn.commit()
         return {"ok": True, "mensaje": "Producto vendido y venta registrada"}
+    
+        
 
-    except Exception as e:
+    except sqlite3.Error as e:
         conn.rollback()
-        return {"ok": False, "mensaje": f"Error en la venta: {e}"}
+        log_error(f"Error en venta - Usuario: {usuario} - Código: {codigo} - {e}")
+        print("❌ Error durante la venta:", e)
+        return {"ok": False, "mensaje": "Error interno en la venta"}
 
     finally:
         conn.close()

@@ -1,5 +1,7 @@
+from logger import log_event, log_error
 from db import obtener_conexion
 from seguridad import hash_password
+import sqlite3
 
 
 def crear_tabla_usuarios():
@@ -39,24 +41,41 @@ def crear_usuario(usuario, password, rol):
 
 def login(usuario, password_hash):
     conn = obtener_conexion()
-    cursor = conn.cursor()
+    if conn is None:
+        return {"ok": False, "mensaje":"Error de conexión"}
+    
+    try:
 
-    cursor.execute(
-        "SELECT rol FROM usuarios WHERE usuario = ? AND password = ?",
-        (usuario, password_hash)
-    )
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT rol FROM usuarios WHERE usuario = ? AND password = ?",
+            (usuario, password_hash)
+        )
 
-    fila = cursor.fetchone()
-    conn.close()
+        fila = cursor.fetchone()
+        
+        conn.close()
 
-    if fila is None:
-        return {"ok": False, "mensaje": "Credenciales inválidas"}
+        if fila is None:
+            log_error(f"Intento fallido de login: {usuario}")
+            return {"ok": False, "mensaje": "Credenciales inválidas"}
+            
 
-    return {
-        "ok": True,
-        "usuario": usuario,
-        "rol": fila[0]
-    }
+        log_event(f"Login exitoso: {usuario}")
+
+        return {
+            "ok": True,
+            "usuario": usuario,
+            "rol": fila[0]
+        }
+    
+    except sqlite3.Error as e:
+        log_error(f"Error en login - Usuario: {usuario} - {e}")
+        return {"ok": False, "mensaje": "Error interno en login"}
+
+    finally:
+        conn.close()
+        
 
 
 def ver_usuarios():
